@@ -64,4 +64,10 @@ module.exports = {
       }
     }
   },
+  mocha: {
+    reporter: 'xunit',
+    reporterOptions: {
+      output: 'GIVERS_TEST-results.xml'
+    }
+  }
 };

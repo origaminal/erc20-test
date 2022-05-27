@@ -1,0 +1,19 @@
+<testsuite name="Mocha Tests" tests="5" failures="0" errors="1" skipped="0" timestamp="Fri, 27 May 2022 21:18:06 GMT" time="20.927">
+<testcase classname="Givers Chain Deployment" name="Should set the right supply amount" time="0.018"/>
+<testcase classname="Givers Chain Deployment" name="Should assign the total supply of tokens to the owner" time="0.022"/>
+<testcase classname="Givers Chain Transfers" name="Should transfer with no fee for excluded accounts " time="0.175"/>
+<testcase classname="Givers Chain Transfers" name="Should transfer with fee for included accounts " time="0.069"/>
+<testcase classname="Givers Chain Transfers" name="Should send fee fo Charity and marketing wallet" time="0.075"><failure>expected +0 to equal 3
+
+      + expected - actual
+
+      -0
+      +3
+      
+AssertionError: expected +0 to equal 3
+    at Context.&#x3C;anonymous&#x3E; (test/Givers-test.js:129:35)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at runNextTicks (node:internal/process/task_queues:65:3)
+    at listOnTimeout (node:internal/timers:528:9)
+    at processTimers (node:internal/timers:502:7)</failure></testcase>
+</testsuite>
