@@ -1,45 +1,5 @@
-<testsuite name="Mocha Tests" tests="8" failures="0" errors="3" skipped="0" timestamp="Mon, 30 May 2022 08:30:56 GMT" time="26.587">
-<testcase classname="Givers Chain Deployment" name="Should set the right supply amount" time="0.018"/>
-<testcase classname="Givers Chain Deployment" name="Should assign the total supply of tokens to the owner" time="0.013"/>
-<testcase classname="Givers Chain Transfers:Before  swapAndLiquify is enabled" name="Should transfer with no fee for excluded accounts " time="0.162"/>
-<testcase classname="Givers Chain Transfers:Before  swapAndLiquify is enabled" name="Should transfer with fee for included accounts " time="0.128"/>
-<testcase classname="Givers Chain Transfers:Before  swapAndLiquify is enabled" name="Should send fee fo Charity and marketing wallet" time="0.073"><failure>expected +0 to equal 3
-
-      + expected - actual
-
-      -0
-      +3
-      
-AssertionError: expected +0 to equal 3
-    at Context.&#x3C;anonymous&#x3E; (test/Givers-test.js:128:35)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-    at runNextTicks (node:internal/process/task_queues:65:3)
-    at listOnTimeout (node:internal/timers:528:9)
-    at processTimers (node:internal/timers:502:7)</failure></testcase>
-<testcase classname="Givers Chain Transfers:After  swapAndLiquify is enabled" name="Should transfer with no fee for excluded accounts " time="0.133"/>
-<testcase classname="Givers Chain Transfers:After  swapAndLiquify is enabled" name="Should transfer with fee for included accounts " time="0.001"><failure>too many arguments: passed to contract (count=4, expectedCount=2, code=UNEXPECTED_ARGUMENT, version=contracts/5.6.2)
-Error: too many arguments: passed to contract (count=4, expectedCount=2, code=UNEXPECTED_ARGUMENT, version=contracts/5.6.2)
-    at Logger.makeError (node_modules/@ethersproject/logger/src.ts/index.ts:261:28)
-    at Logger.throwError (node_modules/@ethersproject/logger/src.ts/index.ts:273:20)
-    at Logger.checkArgumentCount (node_modules/@ethersproject/logger/src.ts/index.ts:339:18)
-    at /home/steve/Documents/Dapps/GIVERSChain/node_modules/@ethersproject/contracts/src.ts/index.ts:187:12
-    at step (node_modules/@ethersproject/contracts/lib/index.js:48:23)
-    at Object.next (node_modules/@ethersproject/contracts/lib/index.js:29:53)
-    at /home/steve/Documents/Dapps/GIVERSChain/node_modules/@ethersproject/contracts/lib/index.js:23:71
-    at new Promise (&#x3C;anonymous&#x3E;)
-    at __awaiter (node_modules/@ethersproject/contracts/lib/index.js:19:12)
-    at populateTransaction (node_modules/@ethersproject/contracts/lib/index.js:152:12)</failure></testcase>
-<testcase classname="Givers Chain Transfers:After  swapAndLiquify is enabled" name="Should send fee fo Charity and marketing wallet" time="0.064"><failure>expected +0 to equal 3
-
-      + expected - actual
-
-      -0
-      +3
-      
-AssertionError: expected +0 to equal 3
-    at Context.&#x3C;anonymous&#x3E; (test/Givers-test.js:197:35)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-    at runNextTicks (node:internal/process/task_queues:65:3)
-    at listOnTimeout (node:internal/timers:528:9)
-    at processTimers (node:internal/timers:502:7)</failure></testcase>
+<testsuite name="Mocha Tests" tests="3" failures="0" errors="0" skipped="0" timestamp="Mon, 30 May 2022 20:54:33 GMT" time="20.101">
+<testcase classname="Givers Chain Transfers:Before swapAndLiquify is enabled" name="Should transfer with no fee for excluded accounts " time="0.312"/>
+<testcase classname="Givers Chain Transfers:Before swapAndLiquify is enabled" name="Should transfer with fee for included accounts " time="0.173"/>
+<testcase classname="Givers Chain Transfers:Before swapAndLiquify is enabled" name="Should not send fee to Charity and marketing wallet" time="0.072"/>
 </testsuite>
