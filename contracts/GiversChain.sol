@@ -1085,12 +1085,15 @@ contract GiversChain is Context, IERC20, Ownable {
         return (rAmount, rTransferAmount, rFee);
     }
 
-    function _getRate() private view returns(uint256) {
+
+    // was private
+    function _getRate() public view returns(uint256) {
         (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
         return rSupply.div(tSupply);
     }
 
-    function _getCurrentSupply() private view returns(uint256, uint256) {
+    //was private
+    function _getCurrentSupply() public view returns(uint256, uint256) {
         uint256 rSupply = _rTotal;
         uint256 tSupply = _tTotal;      
         for (uint256 i = 0; i < _excluded.length; i++) {
@@ -1166,11 +1169,7 @@ contract GiversChain is Context, IERC20, Ownable {
         emit Approval(owner, spender, amount);
     }
 
-    function _transfer(
-        address from,
-        address to,
-        uint256 amount
-    ) private {
+    function _transfer(address from,address to,uint256 amount) private {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
@@ -1189,11 +1188,7 @@ contract GiversChain is Context, IERC20, Ownable {
         }
         
         bool overMinTokenBalance = contractTokenBalance >= numTokensSellToAddToLiquidity;
-        if (overMinTokenBalance &&
-            !inSwapAndLiquify &&
-            from != uniswapV2Pair &&
-            swapAndLiquifyEnabled
-        ) {
+        if (overMinTokenBalance && !inSwapAndLiquify && from != uniswapV2Pair && swapAndLiquifyEnabled) {
             contractTokenBalance = numTokensSellToAddToLiquidity;
             //add liquidity
             swapAndLiquify(contractTokenBalance);

@@ -14,11 +14,11 @@
 	|_______/  \_______/ \_______/|________/      |__/  \__/ \______/    \___/ |_______/ 
                                                                                     
    Great features:
-   3% fee auto add to the liquidity pool to locked forever when selling
-   3% fee auto moved to marketing wallet
-   1% fee auto moved to charity wallet
-   1% fee auto moved to burn wallet
-   2% fee auto distribute to all holders
+   3% fee auto add to the liquidity pool to locked forever when selling//same
+   3% fee auto moved to marketing wallet//same
+   1% fee auto moved to charity wallet//same
+   1% fee auto moved to burn wallet//same
+   2% fee auto distribute to all holders//3
    
    1,000,000,000,000 total supply
    1,000,000,000,000 tokens limitation for trade, which is 100% of the total supply
@@ -387,11 +387,7 @@ contract DEEZNUTS is Context, IERC20, Ownable {
         emit Approval(owner, spender, amount);
     }
 
-    function _transfer(
-        address from,
-        address to,
-        uint256 amount
-    ) private {
+    function _transfer( address from, address to,uint256 amount) private {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");

@@ -30,7 +30,8 @@ module.exports = {
   networks: {
     hardhat:{
       forking: {url: process.env.ROPSTEN_URL || "https://ropsten.infura.io/v3/086b2f5436fe40c8ac6aefbc93f206cd"},
-      allowUnlimitedContractSize: true
+      allowUnlimitedContractSize: true,
+      timeout:9000
     },
 
     ropsten: {
@@ -64,10 +65,10 @@ module.exports = {
       }
     }
   },
-  mocha: {
-    reporter: 'xunit',
-    reporterOptions: {
-      output: 'GIVERS_TEST-results.xml'
-    }
-  }
+  // mocha: {
+  //   reporter: 'xunit',
+  //   reporterOptions: {
+  //     output: 'GIVERS_TEST-results.xml'
+  //   }
+  // }
 };
