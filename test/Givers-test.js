@@ -93,9 +93,7 @@ const { ethers } = require("hardhat");
 
     it("Should transfer with fee for included accounts ", async function () {
 
-      //check rsupply && tsupply
-      
-
+      //check reflection supply && true supply
       supply = await hardhatToken._getCurrentSupply()
       const {0: rsupply, 1: tsupply} = supply
       expect(rsupply > tsupply)
