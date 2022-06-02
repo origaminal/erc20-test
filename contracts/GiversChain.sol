@@ -1,24 +1,14 @@
-/**
- *Submitted for verification at BscScan.com on 2021-06-23
-*/
+
 
 /**  
-	
-	 /$$$$$$$                                      /$$   /$$             /$$             
-	| $$__  $$                                    | $$$ | $$            | $$             
-	| $$  \ $$  /$$$$$$   /$$$$$$  /$$$$$$$$      | $$$$| $$ /$$   /$$ /$$$$$$   /$$$$$$$
-	| $$  | $$ /$$__  $$ /$$__  $$|____ /$$/      | $$ $$ $$| $$  | $$|_  $$_/  /$$_____/
-	| $$  | $$| $$$$$$$$| $$$$$$$$   /$$$$/       | $$  $$$$| $$  | $$  | $$   |  $$$$$$ 
-	| $$  | $$| $$_____/| $$_____/  /$$__/        | $$\  $$$| $$  | $$  | $$ /$$\____  $$
-	| $$$$$$$/|  $$$$$$$|  $$$$$$$ /$$$$$$$$      | $$ \  $$|  $$$$$$/  |  $$$$//$$$$$$$/
-	|_______/  \_______/ \_______/|________/      |__/  \__/ \______/    \___/ |_______/ 
+GiversChain Token
                                                                                     
    Great features:
    3% fee auto add to the liquidity pool to locked forever when selling
-   3% fee auto moved to marketing wallet
+   2% fee auto moved to marketing wallet
    1% fee auto moved to charity wallet
    1% fee auto moved to burn wallet
-   2% fee auto distribute to all holders
+   3% fee auto distribute to all holders
    
    1,000,000,000,000 total supply
    1,000,000,000,000 tokens limitation for trade, which is 100% of the total supply
@@ -837,7 +827,7 @@ contract GiversChain is Context, IERC20, Ownable {
 	address private _burnWalletAddress = 0x000000000000000000000000000000000000dEaD;
    
     uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 100000000 * 10**18;
+    uint256 private _tTotal = 1000000000 * 10**18;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
 
@@ -845,11 +835,11 @@ contract GiversChain is Context, IERC20, Ownable {
     string private _symbol = "GIVERS";
     uint8 private _decimals = 18;
     
-    uint256 public _taxFee = 2;
+    uint256 public _taxFee = 3;
     uint256 private _previousTaxFee = _taxFee;
     
     uint256 public liquidityFee = 3;   
-    uint256 public marketingFee = 3;
+    uint256 public marketingFee = 2;
     uint256 public charityFee   = 1;	
 	
     uint256 private _liquidityFee = liquidityFee.add(marketingFee).add(charityFee);
@@ -1057,88 +1047,7 @@ contract GiversChain is Context, IERC20, Ownable {
      //to recieve ETH from uniswapV2Router when swaping
     receive() external payable {}
 
-    function _reflectFee(uint256 rFee, uint256 tFee) private {
-        _rTotal = _rTotal.sub(rFee);
-        _tFeeTotal = _tFeeTotal.add(tFee);
-    }
-
-    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256) {
-        (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tBurn) = _getTValues(tAmount);
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tBurn, _getRate());
-        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity, tBurn);
-    }
-
-    function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256) {
-        uint256 tFee = calculateTaxFee(tAmount);
-        uint256 tLiquidity = calculateLiquidityFee(tAmount);
-		uint256 tBurn = calculateBurnFee(tAmount);
-        uint256 tTransferAmount = tAmount.sub(tFee).sub(tLiquidity).sub(tBurn);
-        return (tTransferAmount, tFee, tLiquidity, tBurn);
-    }
-
-    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 tBurn, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
-        uint256 rAmount = tAmount.mul(currentRate);
-        uint256 rFee = tFee.mul(currentRate);
-        uint256 rLiquidity = tLiquidity.mul(currentRate);
-		uint256 rBurn = tBurn.mul(currentRate);
-        uint256 rTransferAmount = rAmount.sub(rFee).sub(rLiquidity).sub(rBurn);
-        return (rAmount, rTransferAmount, rFee);
-    }
-
-
-    // was private
-    function _getRate() public view returns(uint256) {
-        (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
-        return rSupply.div(tSupply);
-    }
-
-    //was private
-    function _getCurrentSupply() public view returns(uint256, uint256) {
-        uint256 rSupply = _rTotal;
-        uint256 tSupply = _tTotal;      
-        for (uint256 i = 0; i < _excluded.length; i++) {
-            if (_rOwned[_excluded[i]] > rSupply || _tOwned[_excluded[i]] > tSupply) return (_rTotal, _tTotal);
-            rSupply = rSupply.sub(_rOwned[_excluded[i]]);
-            tSupply = tSupply.sub(_tOwned[_excluded[i]]);
-        }
-        if (rSupply < _rTotal.div(_tTotal)) return (_rTotal, _tTotal);
-        return (rSupply, tSupply);
-    }
-    
-    function _takeLiquidity(uint256 tLiquidity) private {
-        uint256 currentRate =  _getRate();
-        uint256 rLiquidity = tLiquidity.mul(currentRate);
-        _rOwned[address(this)] = _rOwned[address(this)].add(rLiquidity);
-        if(_isExcluded[address(this)])
-            _tOwned[address(this)] = _tOwned[address(this)].add(tLiquidity);
-    }
-	
-	function _takeBurn(uint256 tBurn) private {
-        uint256 currentRate =  _getRate();
-        uint256 rBurn = tBurn.mul(currentRate);
-        _rOwned[_burnWalletAddress] = _rOwned[_burnWalletAddress].add(rBurn);
-        if(_isExcluded[_burnWalletAddress])
-            _tOwned[_burnWalletAddress] = _tOwned[_burnWalletAddress].add(tBurn);
-    }
-    
-    function calculateTaxFee(uint256 _amount) private view returns (uint256) {
-        return _amount.mul(_taxFee).div(
-            10**2
-        );
-    }
-	
-    function calculateLiquidityFee(uint256 _amount) private view returns (uint256) {
-        return _amount.mul(_liquidityFee).div(
-            10**2
-        );
-    }
-	
-	function calculateBurnFee(uint256 _amount) private view returns (uint256) {
-        return _amount.mul(_burnFee).div(
-            10**2
-        );
-    }
-    
+   
     function removeAllFee() private {
         if(_taxFee == 0 && _liquidityFee == 0 && _burnFee == 0) return;
         
@@ -1248,7 +1157,7 @@ contract GiversChain is Context, IERC20, Ownable {
         );
     }
 
-    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
+    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) public {
         // approve token transfer to cover all possible scenarios
         _approve(address(this), address(uniswapV2Router), tokenAmount);
 
@@ -1262,6 +1171,88 @@ contract GiversChain is Context, IERC20, Ownable {
             block.timestamp
         );
     }
+
+     function _reflectFee(uint256 rFee, uint256 tFee) private {
+        _rTotal = _rTotal.sub(rFee);
+        _tFeeTotal = _tFeeTotal.add(tFee);
+    }
+
+    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256) {
+        (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tBurn) = _getTValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tBurn, _getRate());
+        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity, tBurn);
+    }
+
+    function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256) {
+        uint256 tFee = calculateTaxFee(tAmount);
+        uint256 tLiquidity = calculateLiquidityFee(tAmount);
+		uint256 tBurn = calculateBurnFee(tAmount);
+        uint256 tTransferAmount = tAmount.sub(tFee).sub(tLiquidity).sub(tBurn);
+        return (tTransferAmount, tFee, tLiquidity, tBurn);
+    }
+
+    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 tBurn, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
+        uint256 rAmount = tAmount.mul(currentRate);
+        uint256 rFee = tFee.mul(currentRate);
+        uint256 rLiquidity = tLiquidity.mul(currentRate);
+		uint256 rBurn = tBurn.mul(currentRate);
+        uint256 rTransferAmount = rAmount.sub(rFee).sub(rLiquidity).sub(rBurn);
+        return (rAmount, rTransferAmount, rFee);
+    }
+
+    // was private
+    function _getRate() public view returns(uint256) {
+        (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
+        return rSupply.div(tSupply);
+    }
+
+    //was private
+    function _getCurrentSupply() public view returns(uint256, uint256) {
+        uint256 rSupply = _rTotal;
+        uint256 tSupply = _tTotal;      
+        for (uint256 i = 0; i < _excluded.length; i++) {
+            if (_rOwned[_excluded[i]] > rSupply || _tOwned[_excluded[i]] > tSupply) return (_rTotal, _tTotal);
+            rSupply = rSupply.sub(_rOwned[_excluded[i]]);
+            tSupply = tSupply.sub(_tOwned[_excluded[i]]);
+        }
+        if (rSupply < _rTotal.div(_tTotal)) return (_rTotal, _tTotal);
+        return (rSupply, tSupply);
+    }
+    
+    function _takeLiquidity(uint256 tLiquidity) private {
+        uint256 currentRate =  _getRate();
+        uint256 rLiquidity = tLiquidity.mul(currentRate);
+        _rOwned[address(this)] = _rOwned[address(this)].add(rLiquidity);
+        if(_isExcluded[address(this)])
+            _tOwned[address(this)] = _tOwned[address(this)].add(tLiquidity);
+    }
+	
+	function _takeBurn(uint256 tBurn) private {
+        uint256 currentRate =  _getRate();
+        uint256 rBurn = tBurn.mul(currentRate);
+        _rOwned[_burnWalletAddress] = _rOwned[_burnWalletAddress].add(rBurn);
+        if(_isExcluded[_burnWalletAddress])
+            _tOwned[_burnWalletAddress] = _tOwned[_burnWalletAddress].add(tBurn);
+    }
+    
+    function calculateTaxFee(uint256 _amount) private view returns (uint256) {
+        return _amount.mul(_taxFee).div(
+            10**2
+        );
+    }
+	
+    function calculateLiquidityFee(uint256 _amount) private view returns (uint256) {
+        return _amount.mul(_liquidityFee).div(
+            10**2
+        );
+    }
+	
+	function calculateBurnFee(uint256 _amount) private view returns (uint256) {
+        return _amount.mul(_burnFee).div(
+            10**2
+        );
+    }
+    
 
     //this method is responsible for taking all fee, if takeFee is true
     function _tokenTransfer(address sender, address recipient, uint256 amount,bool takeFee) private {

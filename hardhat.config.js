@@ -1,12 +1,11 @@
-const { init } = require("fp-ts/lib/Array");
-const { initial } = require("lodash");
+
 
 require("dotenv").config();
 
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
-//require("solidity-coverage");
+require("solidity-coverage");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -29,25 +28,41 @@ module.exports = {
   solidity: "0.8.5",
   networks: {
     hardhat:{
-      forking: {url: process.env.ROPSTEN_URL || "https://ropsten.infura.io/v3/086b2f5436fe40c8ac6aefbc93f206cd"},
-      allowUnlimitedContractSize: true,
-      timeout:9000
+      forking: {
+        url: process.env.ROPSTEN_URL,
+        allowUnlimitedContractSize: true,
+        timeout:90000}
+      
     },
 
     ropsten: {
       url: process.env.ROPSTEN_URL || "https://ropsten.infura.io/v3/086b2f5436fe40c8ac6aefbc93f206cd",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [process.env.PRIVATE_KEY0,process.env.PRIVATE_KEY1,process.env.PRIVATE_KEY2,process.env.PRIVATE_KEY3,process.env.PRIVATE_KEY4,process.env.PRIVATE_KEY5],
-      //accounts: [`0x${Private_Key}`]
-      // accounts: {
-      //   mnemonic: process.env.MNEMONIC,
-      //   path:"m/44'/60'/0'/0",
-      //   initialIndex:0,
-      //   count:5,
-      //   passPhrase:''
-      // }
-     gas:5603244
+      gas:5603244
 
     },
+    bsctest: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      chainId: 97,
+      gasPrice: 20000000000,
+      accounts: {
+        mnemonic: "test test test test test test test test test test test junk",
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+        passphrase: "",
+      },
+    },
+
+   roburna : {
+      url: process.env.ROBURNA_URL || 'https://preseed-testnet-1.roburna.com/',
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [process.env.PRIVATE_KEY0,process.env.PRIVATE_KEY1,process.env.PRIVATE_KEY2,process.env.PRIVATE_KEY3,process.env.PRIVATE_KEY4,process.env.PRIVATE_KEY5],
+      gas:5603244,
+      chainId:159
+
+    },
+
+
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
@@ -65,10 +80,10 @@ module.exports = {
       }
     }
   },
-  mocha: {
-    reporter: 'xunit',
-    reporterOptions: {
-      output: 'GIVERS_TEST-results.xml'
-    }
-  }
+  // mocha: {
+  //   reporter: 'xunit',
+  //   reporterOptions: {
+  //     output: 'GIVERS_TEST-results.xml'
+  //   }
+  // }
 };
