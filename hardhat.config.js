@@ -31,12 +31,14 @@ module.exports = {
       forking: {
         url: process.env.ROPSTEN_URL,
         allowUnlimitedContractSize: true,
-        timeout:90000}
+        timeout:90000,
+        //blockNumber:12325509
+      }
       
     },
 
     ropsten: {
-      url: process.env.ROPSTEN_URL || "https://ropsten.infura.io/v3/086b2f5436fe40c8ac6aefbc93f206cd",
+      url: process.env.ROPSTEN_URL,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [process.env.PRIVATE_KEY0,process.env.PRIVATE_KEY1,process.env.PRIVATE_KEY2,process.env.PRIVATE_KEY3,process.env.PRIVATE_KEY4,process.env.PRIVATE_KEY5],
       gas:5603244
 
@@ -46,7 +48,7 @@ module.exports = {
       chainId: 97,
       gasPrice: 20000000000,
       accounts: {
-        mnemonic: "test test test test test test test test test test test junk",
+        mnemonic: process.env.MNEMONIC,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 20,

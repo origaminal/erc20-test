@@ -18,43 +18,50 @@ const { ethers } = require("hardhat");
   let addr6;
   let initialLiquidty;
   let supply;
+  let pair
   
   
   describe("Givers Chain", function () {
 
-  beforeEach(async function () {
-    
-    GiversToken =  await ethers.getContractFactory("GiversChain");
+    beforeEach(async function () {
+      
+      GiversToken =  await ethers.getContractFactory("GiversChain");
 
-    [owner, addr1, addr2, addr3, addr4,addr5,addr6,...addrs] = await ethers.getSigners();
+      [owner, addr1, addr2, addr3, addr4,addr5,addr6,...addrs] = await ethers.getSigners();
 
-    hardhatToken = await GiversToken.deploy(addr1.address,addr2.address,process.env.ROUTER02);
-    await hardhatToken.deployed()
+      hardhatToken = await GiversToken.deploy(addr1.address,addr2.address,process.env.ROUTER02);
+      await hardhatToken.deployed()
 
-      //add liquidty
-      this.provider = ethers.provider;
-      const router02 = new ethers.Contract(
-        process.env.ROUTER02,
-        ['function addLiquidityETH(address token, uint amountTokenDesired, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external payable returns (uint amountToken, uint amountETH, uint liquidity)', 'function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory amounts)', 'function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)', 'function swapExactTokensForETHSupportingFeeOnTransferTokens( uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external'], 
-        this.provider);
-        const routerSinger = router02.connect(owner)
+        //add liquidty
+        this.provider = ethers.provider;
 
-        await hardhatToken.approve(process.env.ROUTER02, ethers.utils.parseEther("10000000"));
+        const factory = new ethers.Contract()
 
-        initialLiquidty = ethers.utils.parseEther('10000000')
-        const eTH = 5
-        await routerSinger.addLiquidityETH(
-          hardhatToken.address,
-          initialLiquidty,
-          0,
-          eTH,
-          addr1.address,
-          Math.floor(Date.now() / 1000) + 60 * 10,
-          {value : ethers.utils.parseEther("200")}
-          )
+        const router02 = new ethers.Contract(
+          process.env.ROUTER02,
+          ['function addLiquidityETH(address token, uint amountTokenDesired, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external payable returns (uint amountToken, uint amountETH, uint liquidity)', 'function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory amounts)', 'function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)', 'function swapExactTokensForETHSupportingFeeOnTransferTokens( uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external'], 
+          this.provider);
+         const routerSinger = router02.connect(owner)
 
-  })
-   /**
+         await hardhatToken.approve(process.env.ROUTER02, ethers.utils.parseEther("10000000"));
+
+         initialLiquidty = ethers.utils.parseEther('10000000')
+         const eTH = 5
+         await routerSinger.addLiquidityETH(
+           hardhatToken.address,
+           initialLiquidty,
+           0,
+           eTH,
+           addr1.address,
+           Math.floor(Date.now() / 1000) + 60 * 10,
+           {value : ethers.utils.parseEther("200")}
+           )
+
+            
+            
+
+    })
+    /**
     describe("Deployment", function () {
 
         it("Should set the right supply amount",async function (){
@@ -220,6 +227,11 @@ const { ethers } = require("hardhat");
         const {0: rsupply, 1: tsupply} = supply
         expect(rsupply > tsupply)
 
+        const {0: amountToken, 1: amountETH, 2: liquidity} = pair
+
+        expect(initialLiquidty).to.be.equal(liquidity)
+            //expect(ethers.utils.parseEther("200")).to.be.equal(amountETH)
+
         // Transfer'50,000,000' tokens from owner to addr3 (expect balance of addr3 to be equal to'50,000,000')
         await hardhatToken.transfer(addr3.address, ethers.utils.parseEther('50000000'));
         const addr3Balance = await hardhatToken.balanceOf(addr3.address);
@@ -233,6 +245,7 @@ const { ethers } = require("hardhat");
 
         expect(0).to.be.equal(addr3Balance2)
         expect(true).to.be.equals(reflect > 0 && reflect < 3 )
+        expect(45).to.be.equal(Math.round(addr4Balance/10**24))
 
 
         //Transfer 30,000,000 tokens from addr4 to addr5 (expect a fee of 10%)
@@ -243,6 +256,7 @@ const { ethers } = require("hardhat");
 
         expect(true).to.be.equal(ethers.utils.parseEther('15000000') < addr4Balance2 && addr4Balance2 < ethers.utils.parseEther('16000000'));
         expect(true).to.be.equal(reflection2 > 0 && reflection2 < 3)
+        expect(27).to.be.equal(Math.round(addr5Balance/10**24))
 
         //Transfer 20,000,000 tokens from addr5 to addr6 (expect a fee of 10%)
         await hardhatToken.connect(addr5).transfer(addr6.address, ethers.utils.parseEther('20000000'));
@@ -252,6 +266,7 @@ const { ethers } = require("hardhat");
 
         expect(true).to.equal(ethers.utils.parseEther('7000000') < addr5Balance2 && addr5Balance2 < ethers.utils.parseEther('8000000'));
         expect(true).to.equal(0 < reflection3 && reflection3 < 3)
+        expect(18).to.be.equal(Math.round(addr6Balance/10**24))
 
       });
 
@@ -281,12 +296,24 @@ const { ethers } = require("hardhat");
          const  charityDiff= (charityBalanceAfter - charityBalanceBefore)/10**18
          const tokenDiff= (tokenContractBalanceAfter - tokenContractBalanceBefore)/10**18
         
-        expect(8.26787367198969).to.be.equal(marketingDiff)
-        expect(2.3622496205678836).to.be.equal(charityDiff)
+        expect(8).to.be.equal(Math.round(marketingDiff))
+        expect(2).to.be.equal(Math.round(charityDiff))
         expect(0).to.be.equal(tokenDiff)
 
       });
     
     }) 
+
+    // it('should remove liquidity', async function(){
+    //   await this.routerSinger.removeLiquidityETHSupportingFeeOnTransferTokens(
+    //     address token,
+    //     uint liquidity,
+    //     uint amountTokenMin,
+    //     uint amountETHMin,
+    //     address to,
+    //     uint deadline
+    //   ) 
+    // }) 
+     
 
   })

@@ -871,7 +871,7 @@ contract GiversChain is Context, IERC20, Ownable {
         inSwapAndLiquify = false;
     }
     
-    constructor (address payable charityWallet, address payable marketingWallet, address payable router02) {
+    constructor (address payable charityWallet, address payable marketingWallet, address router02) {
         _rOwned[_msgSender()] = _rTotal;
         
 		_charityWallet = charityWallet;

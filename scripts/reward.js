@@ -10,27 +10,20 @@ async function main() {
   
 
   // We get the contract to deploy
-  const Givers = await hre.ethers.getContractFactory("GiversChain");
+  const Reward = await hre.ethers.getContractFactory("Reward");
                
-
-  const signers = await ethers.getSigners()
-
-  const charityWallet = signers[1]
-  const marketingWallet =signers[2]
 
   
   //We Deploy
-  const givers = await Givers.deploy(charityWallet.address,marketingWallet.address,process.env.ROUTER02BSC);
+  const reward = await Reward.deploy('VAS Rewards', 'VAS', hre.ethers.utils.parseEther('1000000000'));
               
   
   //get address deployed to 
-  await givers.deployed();
+  await reward.deployed();
 
   //Print address
 
-  console.log("givers deployed to:", givers.address);
-  console.log("givers deployed to:", givers.address);
-  console.log("givers deployed to:", givers.address);
+  console.log("Reward deployed to:", reward.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
