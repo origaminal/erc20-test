@@ -73,14 +73,55 @@ module.exports = {
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-  solidity: {
-    version: "0.8.5",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
+  
+    solidity: {
+      compilers: [
+
+        {
+          version: "0.4.18",
+          settings: {},
+        },
+        {
+          version: "0.4.20",
+        },
+        
+        {
+          version: "0.4.24",
+  
+        },
+        {
+          version: "0.8.5",
+          settings: {
+            optimizer: {
+              enabled: true,
+              runs: 200
+            }
+          }
+        },
+
+        {
+          version: "0.8.7",
+          settings: {
+            optimizer: {
+              enabled: true,
+              runs: 200
+            }
+          }
+        },
+
+        {
+          version: "0.8.14",
+          settings: {
+            optimizer: {
+              enabled: true,
+              runs: 200
+            }
+          }
+        }
+        
+        
+      ],
+    
   },
   // mocha: {
   //   reporter: 'xunit',

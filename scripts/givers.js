@@ -20,17 +20,16 @@ async function main() {
 
   
   //We Deploy
-  const givers = await Givers.deploy(charityWallet.address,marketingWallet.address,process.env.ROUTER02BSC);
+  const givers = await Givers.deploy(charityWallet.address,marketingWallet.address,process.env.ROUTER02);
               
   
   //get address deployed to 
   await givers.deployed();
 
   //Print address
-
   console.log("givers deployed to:", givers.address);
-  console.log("givers deployed to:", givers.address);
-  console.log("givers deployed to:", givers.address);
+  console.log("givers charityWallet:", charityWallet.address);
+  console.log("givers marketingWallet:", marketingWallet.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
