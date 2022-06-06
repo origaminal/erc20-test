@@ -8,6 +8,7 @@ const type = require('type-detect');
 
 
 
+
   let GiversToken;
   let hardhatToken;
   let owner;
@@ -42,35 +43,36 @@ const type = require('type-detect');
           ['function getPair(address tokenA, address tokenB) external view returns (address pair)'],
           this.provider
         )
-         this.factorySinger = this.factory.connect(owner)
+         this.factorysigner = this.factory.connect(owner)
 
          //set Pair
-         //const pairAddress = await this.factorySinger.callStatic.createPair(process.env.giversEdited, process.env.WETH)
+         //const pairAddress = await this.factorysigner.callStatic.createPair(process.env.giversEdited, process.env.WETH)
         this.pairAddress = hardhatToken.uniswapV2Pair()
          this.pair = new ethers.Contract(
            this.pairAddress,
-           ['function balanceOf(address owner) external view returns (uint)','function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)'],
+           ['function totalSupply() external view returns (uint)','function balanceOf(address owner) external view returns (uint)','function approve(address spender, uint value) external returns (bool)','function decimals() external pure returns (uint8)','function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)'],
            this.provider
          )
-         this.pairSinger =this.pair.connect(owner)
+         this.pairsigner =this.pair.connect(owner)
 
          //set touter
          this.router02 = new ethers.Contract(
           process.env.ROUTER02,
           ['function addLiquidityETH(address token, uint amountTokenDesired, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external payable returns (uint amountToken, uint amountETH, uint liquidity)', 'function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory amounts)', 'function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)', 'function swapExactTokensForETHSupportingFeeOnTransferTokens( uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external','function removeLiquidityETHSupportingFeeOnTransferTokens( address token,uint liquidity,uint amountTokenMin,uint amountETHMin,address to,uint deadline) external returns (uint amountETH)'], 
           this.provider);
-         this.routerSinger = this.router02.connect(owner)
+         this.routersigner = this.router02.connect(owner)
+         
 
          //add liquidty
          await hardhatToken.approve(process.env.ROUTER02, ethers.utils.parseEther("10000000"));
          initialLiquidty = ethers.utils.parseEther('10000000')
          const eTH = 5
-         await this.routerSinger.addLiquidityETH(
+         await this.routersigner.addLiquidityETH(
            hardhatToken.address,
            initialLiquidty,
            0,
            eTH,
-           addr1.address,
+           owner.address,
            Math.floor(Date.now() / 1000) + 60 * 10,
            {value : ethers.utils.parseEther("200")}
            )
@@ -78,8 +80,8 @@ const type = require('type-detect');
             
             
 
-    })
-    /**
+    }) 
+  /**
     describe("Deployment", function () {
 
         it("Should set the right supply amount",async function (){
@@ -87,8 +89,8 @@ const type = require('type-detect');
         })
 
         it("Should assign the total supply of tokens to the owner", async function () {
-          const ownerBalance = await hardhatToken.balanceOf(owner.address);
-          expect(await hardhatToken.totalSupply()).to.equal(ownerBalance);
+          const ownerBalance = await hardhatToken.balanceOf(owner.address)/10**18*10**9;
+          //expect(await hardhatToken.totalSupply()/10**18*10**9).to.equal(ownerBalance + 1);
         });
 
       });
@@ -101,7 +103,8 @@ const type = require('type-detect');
         //await hardhatToken.excludeFromFee(owner.address)
         await hardhatToken.excludeFromFee(addr1.address)
         await hardhatToken.excludeFromFee(addr2.address)
-        const amount =ethers.utils.parseEther('50') 
+        const amount =ethers.utils.parseEther('50')
+        const remoteLiquidity = ethers.utils.parseEther('30000000')
 
         await hardhatToken.transfer(addr1.address,amount );
         const addr1Balance = await hardhatToken.balanceOf(addr1.address);
@@ -116,7 +119,7 @@ const type = require('type-detect');
         //Treansfer back to owner  
         await hardhatToken.connect(addr2).transfer(owner.address, amount);
         const ownerBalance = await hardhatToken.balanceOf(owner.address);
-        expect(await hardhatToken.totalSupply()).to.equal(ownerBalance);
+        //expect(await hardhatToken.totalSupply()/10**18).to.equal(9.9);
 
       });
 
@@ -207,9 +210,8 @@ const type = require('type-detect');
       })
     
     });
-    */
+    
 
-    /**
     describe('Transfers:After swapAndLiquify is enabled', function(){
 
       it("Should transfer with no fee for excluded accounts ", async function () {
@@ -318,33 +320,59 @@ const type = require('type-detect');
 
       });
     
-    }) */
+    });
+  */
+    describe("Liquidity", function () {
 
-  describe('Liquidity', function (){
+      it("Should add right amount of liquidty", async function(){
 
-  it('Should add right amount of liquidty', async function(){
+            const Ownerliquidity = await this.pairsigner.balanceOf(owner.address)
+            const totalLiquidity = await this.pairsigner.totalSupply()
+            const decimals = await this.pairsigner.decimals()
 
-        const liquidfy = await this.pairSinger.balanceOf(owner.address)
-        const liquidity = await this.pairSinger.getReserves()
-        const {0: reserve0, 1:reserve1, 3: blockTimestampLast} = liquidity
-        const givers = reserve0/10**18
-        const ethers = reserve1/10**18
-        expect(givers).to.be.equal(10000000)
-        expect(ethers).to.be.equal(200)
-        expect(liquidfy).to.be.equal(0)
+            const reserves = await this.pairsigner.getReserves()
+            const {0: reserve0, 1:reserve1, 3: blockTimestampLast} = reserves
+            const ETH = reserve0/10**18
+            const GIVERS = reserve1/10**18
 
-      await this.pairSinger.approve(process.env.ROUTER02, 1000000000000000);
-      await this.routerSinger.removeLiquidityETHSupportingFeeOnTransferTokens(
-      this.pairAddress,
-      2*10**9,
-      0,
-      0,
-      owner.address,
-      Math.floor(Date.now() / 1000) + 60 * 10,
-      ) 
-   }) 
+            const MINIMUM_LIQUIDITY = 10**3;
+            const lpTokenAmount = (Math.sqrt( ETH* GIVERS));
+            
 
-  })
-     
+            expect(true).to.be.equal(ETH ===200|| ETH === 10000000)
+            expect(true).to.be.equal(GIVERS === 10000000 || GIVERS ===200)
+            expect(decimals).to.be.equal(18)
+            
+            expect(totalLiquidity/10**decimals).to.be.equal(Ownerliquidity/10**decimals)
+            expect(lpTokenAmount).to.be.equals(Ownerliquidity/10**decimals)
+      }); 
+
+      it("Should remove half Liquidity", async function() {
+
+          const GIVERS = 10000000;
+          const ETH = 200;
+          const lp = (Math.sqrt(GIVERS * ETH))*10**18;
+          const half = (lp/2)
+          var otherhalf = lp - half
+          
+          await this.pairsigner.approve(process.env.ROUTER02, BigInt(half));
+          await this.routersigner.removeLiquidityETHSupportingFeeOnTransferTokens(
+            hardhatToken.address,
+            BigInt(half),
+            0,
+            0,
+            owner.address,
+            Math.floor(Date.now() / 1000) + 60 * 10,
+            ) 
+
+         var ownerBal = await this.pairsigner.balanceOf(owner.address);
+         otherhalf = otherhalf/10**18
+         ownerBal = ownerBal/10**18
+
+          expect(ownerBal.toFixed(5)).to.be.equal(otherhalf.toFixed(5))
+
+      });
+
+    });
 
   })
