@@ -337,15 +337,15 @@ const type = require('type-detect');
 
             const MINIMUM_LIQUIDITY = 10**3;
             const lpTokenAmount = (Math.sqrt( ETH* GIVERS));
-            
+
 
             expect(true).to.be.equal(ETH ===200|| ETH === 10000000)
             expect(true).to.be.equal(GIVERS === 10000000 || GIVERS ===200)
             expect(decimals).to.be.equal(18)
-            
+
             expect(totalLiquidity/10**decimals).to.be.equal(Ownerliquidity/10**decimals)
             expect(lpTokenAmount).to.be.equals(Ownerliquidity/10**decimals)
-      }); 
+      });
 
       it("Should remove half Liquidity", async function() {
 
@@ -354,7 +354,7 @@ const type = require('type-detect');
           const lp = (Math.sqrt(GIVERS * ETH))*10**18;
           const half = (lp/2)
           var otherhalf = lp - half
-          
+
           await this.pairsigner.approve(process.env.ROUTER02, BigInt(half));
           await this.routersigner.removeLiquidityETHSupportingFeeOnTransferTokens(
             hardhatToken.address,
@@ -363,7 +363,7 @@ const type = require('type-detect');
             0,
             owner.address,
             Math.floor(Date.now() / 1000) + 60 * 10,
-            ) 
+            )
 
          var ownerBal = await this.pairsigner.balanceOf(owner.address);
          otherhalf = otherhalf/10**18
@@ -374,5 +374,83 @@ const type = require('type-detect');
       });
 
     });
+
+      describe("Total supply", function () {
+
+          it("Should be equal to defined value", async function(){
+              const totalSupply = await hardhatToken.totalSupply()
+
+              expect(totalSupply).to.be.equal(ethers.utils.parseUnits('1000000000', 18))
+          });
+
+      });
+
+      describe("Transfer", function () {
+
+          it("Should not take fees from excluded accounts", async function(){
+              // All initial supply belongs to owner
+              expect(
+                  true,
+                  'Owner is not fee-free'
+              ).to.be.equal(await hardhatToken.isExcludedFromFee(owner.address))
+
+              const amount = ethers.utils.parseUnits('100', 18)
+              const ownerInitialBalance = await hardhatToken.balanceOf(owner.address)
+
+              // Transfer FROM fee-free address is fee-free
+              await hardhatToken.transfer(addr1.address, amount)
+              const addr1Balance = await hardhatToken.balanceOf(addr1.address)
+
+              expect(amount, 'Transfer FROM fee-free acc is not fee-free').to.be.equal(addr1Balance)
+
+              // Transfer TO fee-free address is fee-free
+              await hardhatToken.excludeFromFee(addr2.address)
+              await hardhatToken.connect(addr1).transfer(addr2.address, amount)
+              const addr2Balance = await hardhatToken.balanceOf(addr2.address)
+
+              expect(amount, 'Transfer TO fee-free acc is not fee-free').to.be.equal(addr2Balance)
+
+              // Transfer FROM fee-free TO fee-free address is fee-free
+              await hardhatToken.connect(addr2).transfer(owner.address, amount)
+              const ownerBalance = await hardhatToken.balanceOf(owner.address)
+
+              expect(
+                  ownerInitialBalance,
+                  'Transfer FROM and TO fee-free acc is not fee-free'
+              ).to.be.equal(ownerBalance)
+          });
+
+          it("Should take fees from not excluded accounts", async function(){
+              // All initial supply belongs to owner
+              // Ensure addresses has fee applied
+              await hardhatToken.includeInFee(owner.address)
+              await hardhatToken.includeInFee(addr1.address)
+              // Ensure tax fee exists
+              await hardhatToken.setTaxFeePercent(1)
+              const initialTotalFees = await hardhatToken.totalFees()
+
+              const amount = ethers.utils.parseUnits('100', 18)
+
+              // Transfer FROM fee-free address is fee-free
+              await hardhatToken.transfer(addr1.address, amount)
+              const addr1Balance = await hardhatToken.balanceOf(addr1.address)
+
+              expect(
+                  true,
+                  'Transfer is fee-free'
+              ).to.be.equal(
+                  amount.gt(addr1Balance)
+              )
+
+              const totalFees = await hardhatToken.totalFees()
+              expect(
+                  true,
+                  'No tax fees collected'
+              ).to.be.equal(
+                  initialTotalFees.lt(totalFees)
+              )
+          });
+
+      });
 
   })
