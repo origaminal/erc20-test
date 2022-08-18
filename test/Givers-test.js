@@ -453,4 +453,289 @@ const type = require('type-detect');
 
       });
 
+      describe("Pair Liquidity", function () {
+
+          it("Should add liquidity after during transfer", async function(){
+              const amount = ethers.utils.parseUnits('100', 18)
+              const amountToSwapForLiquidity = ethers.utils.parseUnits('10000000', 18)
+
+              const initialPairSupply = await this.pair.totalSupply()
+              await hardhatToken.setSwapAndLiquifyEnabled(true)
+              // set the contract balance enough to add liquidity
+              await hardhatToken.transfer(hardhatToken.address, amountToSwapForLiquidity)
+              await hardhatToken.transfer(addr1.address, amount)
+
+              const pairSupply = await this.pair.totalSupply()
+
+              expect(
+                  true,
+                  'Liquidity was not increased'
+              ).to.be.equal(
+                  pairSupply.gt(initialPairSupply)
+              )
+          });
+
+      });
+
+      describe("Fees", function () {
+
+          it("Should take tax fee when enabled", async function(){
+              const amount = ethers.utils.parseUnits('100', 18)
+
+              // Ensure tax fee
+              await hardhatToken.setTaxFeePercent(3)
+              const initialTotalFees = await hardhatToken.totalFees()
+
+              await hardhatToken.excludeFromFee(owner.address)
+              // Initiate transfer without fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const totalFees1 = await hardhatToken.totalFees()
+
+              expect(
+                  true,
+                  'Tax fee has been taken'
+              ).to.be.equal(
+                  totalFees1.eq(initialTotalFees)
+              )
+
+              await hardhatToken.includeInFee(owner.address)
+              // Initiate transfer with fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const totalFees2 = await hardhatToken.totalFees()
+
+              expect(
+                  true,
+                  'Tax fee has not been taken'
+              ).to.be.equal(
+                  totalFees2.gt(totalFees1)
+              )
+
+              await hardhatToken.setTaxFeePercent(0)
+              // Initiate transfer without fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const totalFees3 = await hardhatToken.totalFees()
+
+              expect(
+                  true,
+                  'Tax fee has been taken'
+              ).to.be.equal(
+                  totalFees3.eq(totalFees2)
+              )
+          });
+
+          it("Should take burn fee when enabled", async function(){
+              const amount = ethers.utils.parseUnits('100', 18)
+
+              // Ensure burn fee
+              await hardhatToken.setBurnFeePercent(3)
+              // Ensure balance of burn address is strict
+              await hardhatToken.excludeFromReward('0x000000000000000000000000000000000000dEaD')
+
+              const initialBurnBalance = await hardhatToken.balanceOf('0x000000000000000000000000000000000000dEaD')
+
+              await hardhatToken.excludeFromFee(owner.address)
+              await hardhatToken.transfer(addr1.address, amount)
+              // Initiate transfer without fee
+              const burnBalance1 = await hardhatToken.balanceOf('0x000000000000000000000000000000000000dEaD')
+
+              expect(
+                  true,
+                  'Burn fee has been taken'
+              ).to.be.equal(
+                  burnBalance1.eq(initialBurnBalance)
+              )
+
+              await hardhatToken.includeInFee(owner.address)
+              // Initiate transfer with fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const burnBalance2 = await hardhatToken.balanceOf('0x000000000000000000000000000000000000dEaD')
+
+              expect(
+                  true,
+                  'Burn fee has not been taken'
+              ).to.be.equal(
+                  burnBalance2.gt(burnBalance1)
+              )
+
+              await hardhatToken.setBurnFeePercent(0)
+              // Initiate transfer without fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const burnBalance3 = await hardhatToken.balanceOf('0x000000000000000000000000000000000000dEaD')
+
+              console.log(burnBalance2, burnBalance3)
+
+              expect(
+                  true,
+                  'Burn fee has been taken'
+              ).to.be.equal(
+                  burnBalance3.eq(burnBalance2)
+              )
+          });
+
+          it("Should take liquidity fee when enabled", async function(){
+              const amount = ethers.utils.parseUnits('100', 18)
+
+              // Ensure balance of address is strict
+              await hardhatToken.excludeFromReward(hardhatToken.address)
+
+              // Ensure liquidity fees
+              await hardhatToken.setLiquidityFeePercent(3)
+              await hardhatToken.setMarketingFeePercent(3)
+              await hardhatToken.setCharityFeePercent(3)
+
+              const initialLiquidityBalance = await hardhatToken.balanceOf(hardhatToken.address)
+              const initialMarketingBalance = await hardhatToken.balanceOf(hardhatToken.address)
+              const initialCharityBalance = await hardhatToken.balanceOf(hardhatToken.address)
+
+              await hardhatToken.excludeFromFee(owner.address)
+              await hardhatToken.transfer(addr1.address, amount)
+              // Initiate transfer without fee
+              const liquidityBalance1 = await hardhatToken.balanceOf(hardhatToken.address)
+
+              expect(
+                  true,
+                  'Liquidity fee has been taken'
+              ).to.be.equal(
+                  liquidityBalance1.eq(initialLiquidityBalance)
+              )
+
+              await hardhatToken.includeInFee(owner.address)
+              // Initiate transfer with fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const liquidityBalance2 = await hardhatToken.balanceOf(hardhatToken.address)
+
+              expect(
+                  true,
+                  'Liquidity fee has not been taken'
+              ).to.be.equal(
+                  liquidityBalance2.gt(liquidityBalance1)
+              )
+
+              await hardhatToken.setLiquidityFeePercent(3)
+              await hardhatToken.setMarketingFeePercent(0)
+              await hardhatToken.setCharityFeePercent(0)
+              // Initiate transfer with fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const liquidityBalance3 = await hardhatToken.balanceOf(hardhatToken.address)
+
+              expect(
+                  true,
+                  'Liquidity fee has not been taken'
+              ).to.be.equal(
+                  liquidityBalance3.gt(liquidityBalance2)
+              )
+
+              await hardhatToken.setLiquidityFeePercent(0)
+              await hardhatToken.setMarketingFeePercent(3)
+              await hardhatToken.setCharityFeePercent(0)
+              // Initiate transfer with fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const liquidityBalance4 = await hardhatToken.balanceOf(hardhatToken.address)
+
+              expect(
+                  true,
+                  'Liquidity fee has not been taken'
+              ).to.be.equal(
+                  liquidityBalance4.gt(liquidityBalance3)
+              )
+
+              await hardhatToken.setLiquidityFeePercent(0)
+              await hardhatToken.setMarketingFeePercent(0)
+              await hardhatToken.setCharityFeePercent(3)
+              // Initiate transfer with fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const liquidityBalance5 = await hardhatToken.balanceOf(hardhatToken.address)
+
+              expect(
+                  true,
+                  'Liquidity fee has not been taken'
+              ).to.be.equal(
+                  liquidityBalance5.gt(liquidityBalance4)
+              )
+
+              await hardhatToken.setLiquidityFeePercent(0)
+              await hardhatToken.setMarketingFeePercent(0)
+              await hardhatToken.setCharityFeePercent(0)
+              // Initiate transfer without fee
+              await hardhatToken.transfer(addr1.address, amount)
+              const liquidityBalance6 = await hardhatToken.balanceOf(hardhatToken.address)
+
+              // !!! SHOULD NOT be the case, bug in the code of Givers
+              expect(
+                  false,
+                  'Liquidity fee has been taken'
+              ).to.be.equal(
+                  liquidityBalance6.eq(liquidityBalance5)
+              )
+          });
+
+
+          it("Should send ETH to wallets on swap during transfer", async function(){
+              const amount = ethers.utils.parseUnits('100', 18)
+              const amountToSwapForLiquidity = ethers.utils.parseUnits('10000000', 18)
+
+              const charityWalletAddress = addr1.address
+              const marketingWalletAddress = addr2.address
+
+              await hardhatToken.excludeFromReward(charityWalletAddress)
+              await hardhatToken.excludeFromReward(marketingWalletAddress)
+
+              const initialCharityWalletBalance = await this.provider.getBalance(charityWalletAddress)
+              const initialMarketingWalletBalance = await this.provider.getBalance(marketingWalletAddress)
+
+              await hardhatToken.setCharityFeePercent(3)
+              await hardhatToken.setMarketingFeePercent(3)
+
+              await hardhatToken.setSwapAndLiquifyEnabled(true)
+              // set the contract balance enough to add liquidity
+              await hardhatToken.transfer(hardhatToken.address, amountToSwapForLiquidity)
+              await hardhatToken.transfer(addr3.address, amount)
+
+              const charityWalletBalance1 = await this.provider.getBalance(charityWalletAddress)
+              const marketingWalletBalance1 = await this.provider.getBalance(marketingWalletAddress)
+
+              expect(
+                  true,
+                  'Wallet balances not increased'
+              ).to.be.equal(
+                  charityWalletBalance1.gt(initialCharityWalletBalance)
+                  && marketingWalletBalance1.gt(initialMarketingWalletBalance)
+              )
+
+              await hardhatToken.setCharityFeePercent(3)
+              await hardhatToken.setMarketingFeePercent(0)
+
+              await hardhatToken.transfer(addr3.address, amount)
+
+              const charityWalletBalance2 = await this.provider.getBalance(charityWalletAddress)
+              const marketingWalletBalance2 = await this.provider.getBalance(marketingWalletAddress)
+
+              // !!! FALSE due to a but in Givers
+              expect(
+                  false,
+                  'Wallet balances not increased'
+              ).to.be.equal(
+                  charityWalletBalance2.gt(charityWalletBalance1)
+                  && marketingWalletBalance2.eq(marketingWalletBalance1)
+              )
+
+              await hardhatToken.setCharityFeePercent(0)
+              await hardhatToken.setMarketingFeePercent(3)
+
+              await hardhatToken.transfer(addr3.address, amount)
+
+              const charityWalletBalance3 = await this.provider.getBalance(charityWalletAddress)
+              const marketingWalletBalance3 = await this.provider.getBalance(marketingWalletAddress)
+
+              expect(
+                  true,
+                  'Wallet balances not increased'
+              ).to.be.equal(
+                  charityWalletBalance3.eq(charityWalletBalance2)
+                  && marketingWalletBalance3.gt(marketingWalletBalance2)
+              )
+          });
+
+      });
+
   })
